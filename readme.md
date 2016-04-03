@@ -1,9 +1,8 @@
 install:
-
-npm install 
+- npm install 
 
 
 Run: 
-leap 
-and in another window
-node index.js
+- run the leap app (download from brew cask)
+- and in another window
+- `node index.js`
