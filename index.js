@@ -7,36 +7,19 @@ app.get('/', function(req, res){
   res.sendFile('index.html' , { root : __dirname});
 });
 
-var macbook_socket = undefined;
+demoSocket = null;
 
 io.on('connection', function(socket) {  
   console.log('new connection');
-  socket.emit('helo', {msg: 'welcome'});
+  
+  // socket.emit('hello', {msg: 'welcome'});
   socket.on('accelerometer', function(data) {
     console.log('accel');
     console.log(data);
   });
 
-  socket.on('user', function(data) {
-    console.log(data);
-      if (data.type == "client") {
-          //saving socket
-          macbook_socket = socket;
-      }
-  });
-
-  socket.on("next", function(data) {
-      console.log("received next");
-      if (democlientsocket != undefined) {
-          democlientsocket.emit("next", {});
-      }           
-  });
-
-  socket.on("prev", function(data) {
-      console.log("received prev");
-      if (democlientsocket != undefined) {
-          democlientsocket.emit("prev", {});
-      }
+  socket.on('set demo', function(data) {
+    demoSocket = socket.id;
   });
 
   socket.on('chat message', function(msg){
@@ -45,9 +28,13 @@ io.on('connection', function(socket) {
 
   socket.on('rotation', function(data){
     console.log('rotation: ' + data);
+    socket.broadcast.to(demoSocket).emit('rotation', data);
   });
 
   socket.on('disconnect', function(){
+    if(socket.id == demoSocket) {
+      demoSocket = null;  
+    }
     console.log('user disconnected');
   });
 });
