@@ -1,0 +1,64 @@
+<p id="steering"></p>
+
+<script src="http://js.leapmotion.com/leap-0.6.4.js"></script>
+<script src="http://js.leapmotion.com/leap-plugins-0.1.11.js"></script>
+
+<script src="http://moonshot.ngrok.com/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+  var cats = {};
+  var ok = 0;
+
+  Leap.loop(function(frame) {    
+    frame.hands.forEach(function(hand, index) {
+
+      var cat = ( cats[index] || (cats[index] = new Cat()) );
+      cat.setTransform(hand.screenPosition(), hand.roll());
+
+    });
+
+  }).use('screenPosition', {scale: 0.25});
+
+
+  var Cat = function() {
+    var cat = this;
+    var img = document.createElement('img');
+    img.src = 'https://cdn2.iconfinder.com/data/icons/windows-8-metro-style/512/steering_wheel-.png';
+    img.style.position = 'absolute';
+    img.onload = function () {
+      cat.setTransform([window.innerWidth/2,window.innerHeight/2], 0);
+      document.body.appendChild(img);
+    }
+
+    cat.setTransform = function(position, rotation) {
+      var steering;
+      if(rotation < 1.4 && rotation > -1.4) {
+        if(rotation > .36) {
+          steering = -1;
+        } else if(rotation < -.36) {
+          steering = 1;
+        } else {
+          steering = 0;
+        }
+        socket.emit('rotation', steering);
+      } 
+
+      img.style.left = position[0] - img.width  / 2 + 'px';
+      img.style.top  = position[1] - img.height / 2 + 'px';
+
+      img.style.transform = 'rotate(' + -rotation + 'rad)';
+
+      img.style.webkitTransform = img.style.MozTransform = img.style.msTransform =
+      img.style.OTransform = img.style.transform;
+      rotation = parseInt(rotation);
+      
+      document.getElementById("steering").innerHTML = steering;
+    };
+
+  };
+
+  cats[0] = new Cat();
+
+
+  
+</script>
